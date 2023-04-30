@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AndreTurismoApp.AddressService.Data;
 using AndreTurismoApp.Models;
+using System.Runtime.ConstrainedExecution;
 using AndreTurismoApp.Services;
 
 namespace AndreTurismoApp.AddressService.Controllers
@@ -16,10 +17,12 @@ namespace AndreTurismoApp.AddressService.Controllers
     public class AddressesController : ControllerBase
     {
         private readonly AndreTurismoAppAddressServiceContext _context;
+        private readonly PostOfficesService _postOfficesService;
 
-        public AddressesController(AndreTurismoAppAddressServiceContext context)
+        public AddressesController(AndreTurismoAppAddressServiceContext context, PostOfficesService postOfficesService)
         {
             _context = context;
+            _postOfficesService = postOfficesService;
         }
 
         // GET: api/Addresses
@@ -30,7 +33,7 @@ namespace AndreTurismoApp.AddressService.Controllers
           {
               return NotFound();
           }
-            return await _context.Address.ToListAsync();
+            return await _context.Address.Include( a => a.City).ToListAsync();
         }
 
         // GET: api/Addresses/5
@@ -41,13 +44,14 @@ namespace AndreTurismoApp.AddressService.Controllers
           {
               return NotFound();
           }
-            var address = await _context.Address.FindAsync(id);
+            var listAddress = await _context.Address.Include(x => x.City).ToListAsync();
+
+            var address = listAddress.FirstOrDefault(x => x.City.Id == id);
 
             if (address == null)
             {
                 return NotFound();
             }
-
             return address;
         }
 
@@ -66,6 +70,14 @@ namespace AndreTurismoApp.AddressService.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+
+                var post = PostOfficesService.GetAddress(address.CEP).Result;
+
+                address.Street = post.Street;
+                address.Neighborhood = post.Neighborhood;
+                address.City.Description = post.City;
+
+                _context.Address.Update(address);
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -75,6 +87,7 @@ namespace AndreTurismoApp.AddressService.Controllers
                 }
                 else
                 {
+                    
                     throw;
                 }
             }

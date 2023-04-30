@@ -6,8 +6,8 @@
                                                values (@Street, @Number, @Neighborhood, @CEP, @Complement, @Data_Cadastre, @IdCity);
                                                select cast(scope_identity() as int)";
 
-        public readonly static string GET_ALL = @"select a.Street, a.Number , a.Neighborhood , a.CEP, a.Complement, c.Id 
-                                                  from [Address] a inner join City c on c.IdCity = c.Id";
+        public readonly static string GET_ALL = @"select a.Street, a.Number , a.Neighborhood , a.CEP, a.Complement, c.Description, c.Id 
+                                                  from [Address] a inner join City c on a.IdCity = c.Id";
 
         public readonly static string GET = @"select a.Street, a.Number , a.Neighborhood , a.CEP, a.Complement, c.Id 
                                               from [Address] a inner join City c on c.IdCity = c.Id where a.Id = @Id";

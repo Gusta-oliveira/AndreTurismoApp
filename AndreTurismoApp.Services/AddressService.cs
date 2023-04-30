@@ -9,38 +9,38 @@ using AndreTurismoApp.Repositories;
 
 namespace AndreTurismoApp.Services
 {
-    public class CityServices
-    { 
-        private readonly CityRepository _cityRepository;
-        public CityServices(CityRepository cityService)
+    public class AddressService
+    {
+        private readonly AddressRepository _addressRepository;
+        public AddressService(AddressRepository cityService)
         {
-            _cityRepository = cityService;
+            _addressRepository = cityService;
         }
 
-        public City Insert(City city)
+        public Address Insert(Address address)
         {
-            return _cityRepository.Create(city);
+            return _addressRepository.Create(address);
         }
-        public List<City> GetAll()
+        public List<Address> GetAll()
         {
-            return _cityRepository.GetAll();
+            return _addressRepository.GetAll();
         }
-        public City Get(int id)
+        public Address Get(int id)
         {
-            return _cityRepository.Get(id);
+            return _addressRepository.Get(id);
         }
 
         public bool Update(int id)
         {
             bool status;
-            var city =_cityRepository.Get(id);
+            var city = _addressRepository.Get(id);
             try
-            { 
-                _cityRepository.Update(city);
+            {
+                _addressRepository.Update(city);
 
                 status = true;
             }
-            catch(Exception)
+            catch (Exception)
             {
                 status = false;
                 throw;
@@ -52,7 +52,7 @@ namespace AndreTurismoApp.Services
             bool status = false;
             try
             {
-                _cityRepository.Delete(id);
+                _addressRepository.Delete(id);
                 status = true;
             }
             catch

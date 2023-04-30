@@ -21,5 +21,6 @@ namespace AndreTurismoApp.Models
         public static readonly string DELETE = @"delete from City where id = @idcity";
         public int Id { get; set; }
         public string Description { get; set; }
+        
     }
 }
