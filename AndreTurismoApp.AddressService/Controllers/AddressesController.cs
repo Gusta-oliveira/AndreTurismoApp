@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AndreTurismoApp.AddressService.Data;
 using AndreTurismoApp.Models;
-using System.Runtime.ConstrainedExecution;
 using AndreTurismoApp.Services;
+using AndreTurismoApp.Models.DTO;
 
 namespace AndreTurismoApp.AddressService.Controllers
 {
@@ -16,34 +16,33 @@ namespace AndreTurismoApp.AddressService.Controllers
     [ApiController]
     public class AddressesController : ControllerBase
     {
-        private readonly AndreTurismoAppAddressServiceContext _context;
         private readonly PostOfficesService _postOfficesService;
+        private readonly AndreTurismoAppAddressServiceContext _context;
 
         public AddressesController(AndreTurismoAppAddressServiceContext context, PostOfficesService postOfficesService)
         {
-            _context = context;
             _postOfficesService = postOfficesService;
+            _context = context;
         }
-
         // GET: api/Addresses
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Address>>> GetAddress()
         {
-          if (_context.Address == null)
-          {
-              return NotFound();
-          }
-            return await _context.Address.Include( a => a.City).ToListAsync();
+            if (_context.Address == null)
+            {
+                return NotFound();
+            }
+            return await _context.Address.Include(a => a.City).ToListAsync();
         }
 
         // GET: api/Addresses/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Address>> GetAddress(int id)
         {
-          if (_context.Address == null)
-          {
-              return NotFound();
-          }
+            if (_context.Address == null)
+            {
+                return NotFound();
+            }
             var listAddress = await _context.Address.Include(x => x.City).ToListAsync();
 
             var address = listAddress.FirstOrDefault(x => x.City.Id == id);
@@ -60,36 +59,35 @@ namespace AndreTurismoApp.AddressService.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutAddress(int id, Address address)
         {
-            if (id != address.Id)
-            {
-                return BadRequest();
-            }
+            //if (id != address.Id)
+            //{
+            //    return BadRequest();
+            //}
 
             _context.Entry(address).State = EntityState.Modified;
 
             try
             {
-                await _context.SaveChangesAsync();
-
-                var post = PostOfficesService.GetAddress(address.CEP).Result;
+                var number = address.Number;
+                var post = _postOfficesService.GetAddress(address.CEP).Result;
 
                 address.Street = post.Street;
                 address.Neighborhood = post.Neighborhood;
                 address.City.Description = post.City;
 
                 _context.Address.Update(address);
+                await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!AddressExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    
-                    throw;
-                }
+                //if (!AddressExists(id))
+                //{
+                //    return NotFound();
+                //}
+                //else
+                //{
+                //}
+                throw;
             }
 
             return NoContent();
@@ -97,17 +95,34 @@ namespace AndreTurismoApp.AddressService.Controllers
 
         // POST: api/Addresses
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        //[HttpPost]
+        //public async Task<ActionResult<Address>> PostAddress(Address address)
+        //{
+        //    if (_context.Address == null)
+        //    {
+        //        return Problem("Entity set 'AndreTurismoAppAddressServiceContext.Address'  is null.");
+        //    }
+        //    //Chamar o servico de consulta de endereco ViaCEP
+        //    AddressDTO addreesDto = _postOfficesService.GetAddress(address.CEP).Result;
+        //    var addressComplete = new Address(addreesDto);
+        //    _context.Address.Add(addressComplete);
+
+        //    await _context.SaveChangesAsync();
+
+        //    return addressComplete;
+        //}
         [HttpPost]
-        public async Task<ActionResult<Address>> PostAddress(string cep, Address address, int number)
+        public async Task<ActionResult<Address>> PostAddress(Address address)
         {
-          if (_context.Address == null)
-          {
-              return Problem("Entity set 'AndreTurismoAppAddressServiceContext.Address'  is null.");
-          }
+            if (_context.Address == null)
+            {
+                return Problem("Entity set 'AndreTurismoAppAddressServiceContext.Address'  is null.");
+            }
 
-            var post = PostOfficesService.GetAddress(cep).Result;
+            var post = _postOfficesService.GetAddress(address.CEP).Result;
+            var number = address.Number;
 
-            address.CEP = cep;
+            address.CEP = post.CEP;
             address.Street = post.Street;
             address.Number = number;
             address.Neighborhood = post.Neighborhood;

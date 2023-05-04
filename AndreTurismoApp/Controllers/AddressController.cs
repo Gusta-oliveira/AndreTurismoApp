@@ -1,4 +1,5 @@
-﻿using AndreTurismoApp.Models;
+﻿using System.Net;
+using AndreTurismoApp.Models;
 using AndreTurismoApp.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -21,11 +22,19 @@ namespace AndreTurismoApp.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Address>> PostAddress(Address address)
+        public async Task<HttpStatusCode> PostAddress(Address address)
         {
-
-            return null;
+            return await _addressService.PostAddress(address);
         }
-
+        [HttpPut("{id}")]
+        public async Task<HttpStatusCode> PutAddress(Address address, int id)
+        {
+            return await _addressService.PutAddress(address, id);
+        }
+        [HttpDelete("{id}")]
+        public async Task<HttpStatusCode> DeleteAddress(int id)
+        {
+            return await _addressService.DeleteAddress(id);
+        }
     }
 }
